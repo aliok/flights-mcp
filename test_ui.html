@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flights API - Test UI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        .tab-button {
+            padding: 12px 24px;
+            background: white;
+            border: none;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #667eea;
+            transition: all 0.3s;
+        }
+
+        .tab-button:hover {
+            background: #f0f0f0;
+        }
+
+        .tab-button.active {
+            background: white;
+            color: #764ba2;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+
+        .tab-content {
+            display: none;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .passengers-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+
+        .results {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 4px solid #c33;
+        }
+
+        .flight-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-left: 4px solid #667eea;
+        }
+
+        .flight-card.best {
+            border-left-color: #28a745;
+            background: #f0fff4;
+        }
+
+        .flight-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .flight-name {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .flight-price {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .flight-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .detail-label {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .detail-value {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+            background: #667eea;
+            color: white;
+        }
+
+        .badge.best {
+            background: #28a745;
+        }
+
+        .airport-list {
+            display: grid;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .airport-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .airport-item:hover {
+            transform: translateX(5px);
+        }
+
+        .airport-code {
+            font-weight: 700;
+            color: #667eea;
+            font-size: 1.2em;
+        }
+
+        .airport-name {
+            color: #666;
+        }
+
+        .price-indicator {
+            margin-top: 15px;
+            padding: 10px;
+            background: #e7f3ff;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            color: #0066cc;
+        }
+
+        .price-indicator.low {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .price-indicator.high {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .autocomplete-wrapper {
+            position: relative;
+        }
+
+        .autocomplete-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid #667eea;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            display: none;
+        }
+
+        .autocomplete-dropdown.show {
+            display: block;
+        }
+
+        .autocomplete-item {
+            padding: 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .autocomplete-item:hover {
+            background: #f8f9fa;
+        }
+
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+
+        .autocomplete-item-code {
+            font-weight: 700;
+            color: #667eea;
+            font-size: 1.1em;
+            min-width: 50px;
+        }
+
+        .autocomplete-item-name {
+            color: #666;
+            font-size: 0.9em;
+            flex: 1;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>✈️ Flights API</h1>
+            <p>Test UI for Flight Search API</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-button active" onclick="switchTab('flights')">Search Flights</button>
+            <button class="tab-button" onclick="switchTab('airports')">Search Airports</button>
+        </div>
+
+        <!-- Flight Search Tab -->
+        <div id="flights-tab" class="tab-content active">
+            <form id="flight-form" onsubmit="searchFlights(event)">
+                <div class="form-group">
+                    <label>Trip Type</label>
+                    <select id="trip-type" required onchange="handleTripTypeChange()">
+                        <option value="one-way">One Way</option>
+                        <option value="round-trip">Round Trip</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>From Airport</label>
+                    <div class="autocomplete-wrapper">
+                        <input type="text" id="from-airport" class="airport-input" placeholder="Type airport name or code..." autocomplete="off" required>
+                        <div class="autocomplete-dropdown" id="autocomplete-from"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>To Airport</label>
+                    <div class="autocomplete-wrapper">
+                        <input type="text" id="to-airport" class="airport-input" placeholder="Type airport name or code..." autocomplete="off" required>
+                        <div class="autocomplete-dropdown" id="autocomplete-to"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Outbound Date</label>
+                    <input type="date" id="outbound-date" required>
+                </div>
+
+                <div class="form-group" id="return-date-group" style="display: none;">
+                    <label>Return Date</label>
+                    <input type="date" id="return-date">
+                </div>
+
+                <div class="form-group">
+                    <label>Seat Class</label>
+                    <select id="seat-class" required>
+                        <option value="economy">Economy</option>
+                        <option value="premium-economy">Premium Economy</option>
+                        <option value="business">Business</option>
+                        <option value="first">First</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Passengers</label>
+                    <div class="passengers-row">
+                        <div>
+                            <label style="font-size: 0.9em;">Adults</label>
+                            <input type="number" id="adults" value="1" min="1" max="9" required>
+                        </div>
+                        <div>
+                            <label style="font-size: 0.9em;">Children</label>
+                            <input type="number" id="children" value="0" min="0" max="8">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.9em;">Infants (Seat)</label>
+                            <input type="number" id="infants-seat" value="0" min="0" max="8">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.9em;">Infants (Lap)</label>
+                            <input type="number" id="infants-lap" value="0" min="0" max="8">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit">Search Flights</button>
+            </form>
+
+            <div id="flight-results" class="results"></div>
+        </div>
+
+        <!-- Airport Search Tab -->
+        <div id="airports-tab" class="tab-content">
+            <form id="airport-form" onsubmit="searchAirports(event)">
+                <div class="form-group">
+                    <label>Search Query</label>
+                    <input type="text" id="airport-query" placeholder="e.g., taipei, los angeles, tokyo" required>
+                </div>
+                <button type="submit">Search Airports</button>
+            </form>
+
+            <div id="airport-results" class="results"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(`${tab}-tab`).classList.add('active');
+        }
+
+        function setupAutocomplete(input, dropdownId) {
+            let debounceTimer;
+            const dropdown = document.getElementById(dropdownId);
+            
+            input.addEventListener('input', (e) => {
+                const query = e.target.value.trim();
+                
+                clearTimeout(debounceTimer);
+                
+                if (query.length < 2) {
+                    dropdown.classList.remove('show');
+                    return;
+                }
+                
+                debounceTimer = setTimeout(() => {
+                    searchAirportsForAutocomplete(query, dropdown, input);
+                }, 300);
+            });
+            
+            input.addEventListener('focus', () => {
+                if (input.value.trim().length >= 2) {
+                    searchAirportsForAutocomplete(input.value.trim(), dropdown, input);
+                }
+            });
+            
+            // Close dropdown when clicking outside
+            const wrapper = input.closest('.autocomplete-wrapper');
+            document.addEventListener('click', (e) => {
+                if (!wrapper.contains(e.target)) {
+                    dropdown.classList.remove('show');
+                }
+            });
+        }
+
+        async function searchAirportsForAutocomplete(query, dropdown, input) {
+            try {
+                const response = await fetch(`${API_BASE}/api/airports/search?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                
+                if (!response.ok || !data.airports || data.airports.length === 0) {
+                    dropdown.classList.remove('show');
+                    return;
+                }
+                
+                dropdown.innerHTML = '';
+                data.airports.slice(0, 10).forEach(airport => {
+                    const item = document.createElement('div');
+                    item.className = 'autocomplete-item';
+                    item.innerHTML = `
+                        <span class="autocomplete-item-code">${airport.code}</span>
+                        <span class="autocomplete-item-name">${airport.name.replace(/_/g, ' ')}</span>
+                    `;
+                    item.addEventListener('click', () => {
+                        input.value = airport.code;
+                        dropdown.classList.remove('show');
+                        input.dispatchEvent(new Event('change', { bubbles: true }));
+                    });
+                    dropdown.appendChild(item);
+                });
+                
+                dropdown.classList.add('show');
+            } catch (error) {
+                dropdown.classList.remove('show');
+            }
+        }
+
+        async function searchFlights(event) {
+            event.preventDefault();
+            const resultsDiv = document.getElementById('flight-results');
+            resultsDiv.innerHTML = '<div class="loading">Searching flights...</div>';
+            resultsDiv.classList.add('show');
+
+            const tripType = document.getElementById('trip-type').value;
+            const requestBody = {
+                from_airport: document.getElementById('from-airport').value.toUpperCase(),
+                to_airport: document.getElementById('to-airport').value.toUpperCase(),
+                date: document.getElementById('outbound-date').value,
+                trip: tripType,
+                seat: document.getElementById('seat-class').value,
+                passengers: {
+                    adults: parseInt(document.getElementById('adults').value),
+                    children: parseInt(document.getElementById('children').value),
+                    infants_in_seat: parseInt(document.getElementById('infants-seat').value),
+                    infants_on_lap: parseInt(document.getElementById('infants-lap').value)
+                },
+                fetch_mode: 'common'
+            };
+
+            // Add return_date for round-trip
+            if (tripType === 'round-trip') {
+                const returnDate = document.getElementById('return-date').value;
+                if (returnDate) {
+                    requestBody.return_date = returnDate;
+                }
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/flights/search`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Error searching flights');
+                }
+
+                displayFlightResults(data);
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+
+        function displayFlightResults(data) {
+            const resultsDiv = document.getElementById('flight-results');
+            
+            if (!data.flights || data.flights.length === 0) {
+                resultsDiv.innerHTML = '<div class="error">No flights found</div>';
+                return;
+            }
+
+            let html = '';
+            
+            if (data.current_price) {
+                const priceClass = data.current_price.toLowerCase();
+                html += `<div class="price-indicator ${priceClass}">Current Price: ${data.current_price.toUpperCase()}</div>`;
+            }
+
+            data.flights.forEach(flight => {
+                html += `
+                    <div class="flight-card ${flight.is_best ? 'best' : ''}">
+                        <div class="flight-header">
+                            <div class="flight-name">${flight.name}</div>
+                            <div class="flight-price">${flight.price}</div>
+                        </div>
+                        <div class="flight-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Departure</span>
+                                <span class="detail-value">${flight.departure}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Arrival</span>
+                                <span class="detail-value">${flight.arrival}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Duration</span>
+                                <span class="detail-value">${flight.duration}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Stops</span>
+                                <span class="detail-value">${flight.stops === 0 ? 'Direct' : flight.stops + ' stop(s)'}</span>
+                            </div>
+                        </div>
+                        ${flight.is_best ? '<span class="badge best">Best Option</span>' : ''}
+                        ${flight.delay ? `<div style="margin-top: 10px; color: #dc3545;">⚠️ ${flight.delay}</div>` : ''}
+                    </div>
+                `;
+            });
+
+            resultsDiv.innerHTML = html;
+        }
+
+        async function searchAirports(event) {
+            event.preventDefault();
+            const resultsDiv = document.getElementById('airport-results');
+            const query = document.getElementById('airport-query').value;
+            
+            resultsDiv.innerHTML = '<div class="loading">Searching airports...</div>';
+            resultsDiv.classList.add('show');
+
+            try {
+                const response = await fetch(`${API_BASE}/api/airports/search?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Error searching airports');
+                }
+
+                displayAirportResults(data);
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+
+        function displayAirportResults(data) {
+            const resultsDiv = document.getElementById('airport-results');
+            
+            if (!data.airports || data.airports.length === 0) {
+                resultsDiv.innerHTML = '<div class="error">No airports found</div>';
+                return;
+            }
+
+            let html = '<div class="airport-list">';
+            data.airports.forEach(airport => {
+                html += `
+                    <div class="airport-item" onclick="selectAirport('${airport.code}')">
+                        <div>
+                            <div class="airport-code">${airport.code}</div>
+                            <div class="airport-name">${airport.name.replace(/_/g, ' ')}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            
+            resultsDiv.innerHTML = html;
+        }
+
+        function selectAirport(code) {
+            // Find the first empty airport input and fill it
+            const fromInput = document.getElementById('from-airport');
+            const toInput = document.getElementById('to-airport');
+            
+            if (!fromInput.value) {
+                fromInput.value = code;
+                return;
+            }
+            if (!toInput.value) {
+                toInput.value = code;
+                return;
+            }
+            
+            // If all are filled, just show an alert
+            alert(`Selected: ${code}`);
+        }
+
+        function handleTripTypeChange() {
+            const tripType = document.getElementById('trip-type').value;
+            const returnDateGroup = document.getElementById('return-date-group');
+            const returnDateInput = document.getElementById('return-date');
+            
+            if (tripType === 'round-trip') {
+                returnDateGroup.style.display = 'block';
+                // Set default return date to 7 days after outbound date
+                const outboundDate = document.getElementById('outbound-date').value;
+                if (outboundDate && !returnDateInput.value) {
+                    const returnDate = new Date(outboundDate);
+                    returnDate.setDate(returnDate.getDate() + 7);
+                    returnDateInput.value = returnDate.toISOString().split('T')[0];
+                }
+            } else {
+                returnDateGroup.style.display = 'none';
+                returnDateInput.value = '';
+            }
+        }
+
+        // Initialize
+        // Set default outbound date to tomorrow
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        document.getElementById('outbound-date').value = tomorrow.toISOString().split('T')[0];
+        
+        // Setup autocomplete for airport inputs
+        setupAutocomplete(document.getElementById('from-airport'), 'autocomplete-from');
+        setupAutocomplete(document.getElementById('to-airport'), 'autocomplete-to');
+    </script>
+</body>
+</html>
+

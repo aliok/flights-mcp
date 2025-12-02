@@ -1,1 +1,5 @@
 venv/
+.genmcp/
+*.pid
+*.log
+api-server.log

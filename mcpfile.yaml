@@ -1,0 +1,166 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/genmcp/gen-mcp/refs/heads/main/specs/mcpfile-schema-0.2.0.json
+
+invocationBases:
+  baseApi:
+    http:
+      url: http://localhost:8000
+kind: MCPToolDefinitions
+name: Flights API
+schemaVersion: 0.2.0
+tools:
+- annotations: null
+  description: Check if the service is running.
+  inputSchema:
+    type: object
+  invocation:
+    extends:
+      extend:
+        url: /api/health
+      from: baseApi
+      override:
+        method: GET
+  name: get_api-health
+  title: Health Check
+- annotations: null
+  description: |-
+    Search for airports by name or city.
+
+    Use this endpoint to find valid IATA airport codes before searching for flights.
+    Returns a list of matching airports (up to 10) with their 3-letter IATA codes and full names.
+
+    **Example Usage:**
+    - Search "taipei" → Returns TPE (Taiwan Taoyuan) and TSA (Taipei Songshan)
+    - Search "los angeles" → Returns LAX (Los Angeles International)
+    - Search "kennedy" → Returns JFK (New York John F. Kennedy)
+
+    **Tips:**
+    - Use the returned IATA codes in flight search requests
+    - Search is case-insensitive
+    - Partial matches work (e.g., "angeles" finds Los Angeles)
+  inputSchema:
+    properties:
+      q:
+        description: Search query for airport name or city. Can search by city name
+          (e.g., 'taipei', 'los angeles'), airport name (e.g., 'kennedy', 'heathrow'),
+          or partial matches. Returns up to 10 matching airports with their IATA codes.
+        type: string
+    required:
+    - q
+    type: object
+  invocation:
+    extends:
+      extend:
+        url: /api/airports/search
+      from: baseApi
+      override:
+        method: GET
+  name: get_api-airports-search
+  title: Search Airports Endpoint
+- annotations: null
+  description: |-
+    Search for flights between airports based on the provided criteria.
+
+    **Supported Trip Types:**
+    - **One-way**: Single flight leg from departure to arrival airport (A→B)
+    - **Round-trip**: Outbound flight (A→B) and return flight (B→A) on specified dates
+
+    **Important Constraints:**
+    - Single-leg searches only (no multi-city trips)
+    - For round-trip, return_date is required and must reverse the route
+    - Airport codes must be valid 3-letter IATA codes (use airport search endpoint to find them)
+    - Dates must be in YYYY-MM-DD format
+    - Total passengers cannot exceed 9
+    - Infants on lap cannot exceed number of adults
+
+    **Response:**
+    Returns a list of available flights with details including:
+    - Airline name, departure/arrival times, duration, stops, and price
+    - Price indicator (low/typical/high) compared to historical averages
+    - Best flight options marked with is_best flag
+
+    **Example Workflow:**
+    1. Search for airports: GET /api/airports/search?q=taipei
+    2. Use airport codes in flight search: POST /api/flights/search with from_airport="TPE", to_airport="LAX"
+
+    **Note:** Airline filtering (airlines parameter) is not currently supported and will be ignored.
+  inputSchema:
+    properties:
+      airlines:
+        description: '⚠️ NOT CURRENTLY SUPPORTED: List of airline codes (2-letter
+          IATA like ''DL'', ''AA'', ''UA'') or alliances (''SKYTEAM'', ''STAR_ALLIANCE'',
+          ''ONEWORLD''). This parameter is accepted but ignored by the underlying
+          library. Filtering by airlines is not available at this time.'
+      date:
+        description: 'Outbound departure date in YYYY-MM-DD format. This is the date
+          you want to fly from the departure airport. Example: ''2026-02-06'' for
+          February 6, 2026.'
+        type: string
+      fetch_mode:
+        description: Data fetching mode. Use 'common' (default) for standard web scraping
+          (fast, lightweight). Use 'local' only if 'common' fails (requires Playwright
+          browser setup). Most users should use 'common'.
+        type: string
+      from_airport:
+        description: Departure airport IATA code (3-letter code, e.g., 'JFK', 'LAX',
+          'SFO'). Use the airport search endpoint to find valid codes.
+        type: string
+      max_stops:
+        description: Maximum number of stops allowed for the flight. Use 0 for direct
+          flights only, 1 for flights with at most one stop, etc. Applies to both
+          outbound and return legs. If not specified, flights with any number of stops
+          will be returned.
+      passengers:
+        description: Passenger counts for flight search. Total passengers cannot exceed
+          9.
+        properties:
+          adults:
+            description: 'Number of adult passengers (age 12+). Required: at least
+              1 adult. Maximum: 9 adults.'
+            type: integer
+          children:
+            description: 'Number of child passengers (age 2-11). Maximum: 8 children.'
+            type: integer
+          infants_in_seat:
+            description: 'Number of infants (under 2) traveling in their own seat.
+              Maximum: 8 infants.'
+            type: integer
+          infants_on_lap:
+            description: 'Number of infants (under 2) traveling on an adult''s lap.
+              Cannot exceed number of adults. Maximum: 8 infants.'
+            type: integer
+        type: object
+      return_date:
+        description: 'Return departure date in YYYY-MM-DD format. Required when trip=''round-trip'',
+          must be null or omitted when trip=''one-way''. This is the date you want
+          to fly back from the destination airport. Example: ''2026-02-13'' for February
+          13, 2026.'
+      seat:
+        description: 'Seat class for the flight. Options: ''economy'' (cheapest, standard
+          seating), ''premium-economy'' (more legroom and amenities), ''business''
+          (premium service), ''first'' (highest class). Default is ''economy''.'
+        type: string
+      to_airport:
+        description: Arrival airport IATA code (3-letter code, e.g., 'JFK', 'LAX',
+          'SFO'). Use the airport search endpoint to find valid codes.
+        type: string
+      trip:
+        description: 'Trip type: ''one-way'' for a single flight leg (A→B), or ''round-trip''
+          for outbound and return flights (A→B→A). For round-trip, return_date is
+          required.'
+        type: string
+    required:
+    - from_airport
+    - to_airport
+    - date
+    - trip
+    type: object
+  invocation:
+    extends:
+      extend:
+        url: /api/flights/search
+      from: baseApi
+      override:
+        method: POST
+  name: post_api-flights-search
+  title: Search Flights
+version: 1.0.0
