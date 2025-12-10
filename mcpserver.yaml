@@ -3,7 +3,7 @@
 kind: MCPServerConfig
 runtime:
   loggingConfig:
-    level: info
+    level: debug  # Increased to debug to see tool calls and MCP protocol messages
     encoding: json
     enableMcpLogs: true
   streamableHttpConfig:

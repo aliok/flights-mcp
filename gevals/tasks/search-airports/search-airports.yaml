@@ -1,0 +1,13 @@
+kind: Task
+metadata:
+  name: "search-airports"
+  difficulty: easy
+
+steps:
+  verify:
+    contains: "airport code TPE"
+  
+  prompt:
+    inline: |
+      Search for airports matching "taipei" and tell me what airport codes you found.
+

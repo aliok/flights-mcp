@@ -1,0 +1,12 @@
+kind: Agent
+metadata:
+  name: "claude-code"
+
+# Use builtin Claude Code agent with explicit tool configuration
+# The argTemplate fields tell gevals how to pass MCP tools to Claude Code CLI
+builtin:
+  type: "claude-code"
+
+argTemplateMcpServer: "--mcp-config {{ .File }}"
+argTemplateAllowedTools: "mcp__{{ .ServerName }}__{{ .ToolName }}"
+allowedToolsJoinSeparator: ","

@@ -1,5 +1,11 @@
 venv/
 .genmcp/
+.gevals/
 *.pid
 *.log
 api-server.log
+.gevals-step-*.sh
+gevals-flights-mcp-evaluation-out.json
+.env
+.env.local
+.env.*.local
